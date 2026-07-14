@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hədəf Payment Manager</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1 data-i18n="page.managers">Managers</h1>
+          <div class="subtitle" data-i18n="page.managersSub">Create manager accounts and assign them to campaigns.</div>
+        </div>
+        <button class="btn" id="add-btn" data-i18n="btn.addManager">+ Add Manager</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th.name">Name</th>
+                <th data-i18n="th.email">Email</th>
+                <th data-i18n="th.assignedCampaigns">Assigned Campaigns</th>
+                <th class="text-right" data-i18n="th.actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="managers-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add / Edit modal -->
+  <div class="modal-overlay" id="manager-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title" data-i18n="modal.addManager">Add Manager</h3>
+        <button class="close" onclick="closeModal('manager-modal')">&times;</button>
+      </div>
+      <form id="manager-form">
+        <div class="modal-body">
+          <input type="hidden" id="manager-id" />
+          <div class="form-grid">
+            <label class="field"><span data-i18n="field.firstName">First Name</span><input id="firstName" required /></label>
+            <label class="field"><span data-i18n="field.lastName">Last Name</span><input id="lastName" required /></label>
+          </div>
+          <label class="field"><span data-i18n="field.email">Email</span><input type="email" id="email" required /></label>
+          <label class="field">
+            <span><span data-i18n="field.password">Password</span> <small id="pw-hint"></small></span>
+            <input type="password" id="password" />
+          </label>
+          <label class="field">
+            <span data-i18n="field.assignCampaigns">Assign Campaigns</span>
+          </label>
+          <div class="checklist" id="campaignIds"></div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn secondary" onclick="closeModal('manager-modal')" data-i18n="btn.cancel">Cancel</button>
+          <button type="submit" class="btn" data-i18n="btn.saveManager">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/managers.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hədəf Payment Manager</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1 data-i18n="page.customers">Customers</h1>
+          <div class="subtitle" id="count-subtitle" data-i18n="page.customersSub">Manage customers and record payments.</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn secondary" id="export-excel" data-i18n="btn.exportExcel">Export Excel</button>
+          <button class="btn secondary" id="export-pdf" data-i18n="btn.exportPdf">Export PDF</button>
+          <button class="btn" id="add-btn" data-i18n="btn.addCustomer">+ Add Customer</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <label class="field">
+          <span data-i18n="filter.search">Search</span>
+          <div class="search-field">
+            <span id="search-icon"></span>
+            <input id="f-search" data-i18n-ph="filter.searchPh" placeholder="Name or phone" />
+          </div>
+        </label>
+        <label class="field"><span data-i18n="filter.campaign">Campaign</span><select id="f-campaign"></select></label>
+        <label class="field" id="manager-filter-wrap" style="display:none">
+          <span data-i18n="filter.manager">Manager</span><select id="f-manager"></select>
+        </label>
+        <label class="field">
+          <span data-i18n="filter.status">Status</span>
+          <select id="f-status">
+            <option value="" data-i18n="filter.allStatuses">All statuses</option>
+            <option value="paid" data-i18n="status.paid">Paid</option>
+            <option value="has_debt" data-i18n="status.has_debt">Has Debt</option>
+          </select>
+        </label>
+        <label class="field"><span data-i18n="filter.from">From</span><input type="date" id="f-from" /></label>
+        <label class="field"><span data-i18n="filter.to">To</span><input type="date" id="f-to" /></label>
+        <div class="actions">
+          <button class="btn" id="apply-filters" data-i18n="btn.apply">Apply</button>
+          <button class="btn secondary" id="clear-filters" data-i18n="btn.clear">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="name" data-i18n="th.customer">Customer</th>
+                <th class="sortable" data-sort="phone" data-i18n="th.phone">Phone</th>
+                <th class="sortable" data-sort="campaign" data-i18n="th.campaign">Campaign</th>
+                <th class="sortable text-right" data-sort="total" data-i18n="th.total">Total</th>
+                <th class="sortable text-right" data-sort="paid" data-i18n="th.paid">Paid</th>
+                <th class="sortable text-right" data-sort="remaining" data-i18n="th.remaining">Remaining</th>
+                <th class="sortable" data-sort="progress" data-i18n="th.progress">Progress</th>
+                <th class="sortable" data-sort="next" data-i18n="th.nextPayment">Next payment</th>
+                <th class="sortable" data-sort="status" data-i18n="th.status">Status</th>
+              </tr>
+            </thead>
+            <tbody id="customers-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Customer modal -->
+  <div class="modal-overlay" id="customer-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 data-i18n="modal.addCustomer">Add Customer</h3>
+        <button class="close" onclick="closeModal('customer-modal')">&times;</button>
+      </div>
+      <form id="customer-form">
+        <div class="modal-body">
+          <div class="form-grid">
+            <label class="field"><span data-i18n="field.firstName">First Name</span><input id="c-firstName" required /></label>
+            <label class="field"><span data-i18n="field.lastName">Last Name</span><input id="c-lastName" required /></label>
+          </div>
+          <label class="field"><span data-i18n="field.phone">Phone</span><input id="c-phone" placeholder="+994 50 123 45 67" required /></label>
+          <label class="field">
+            <span data-i18n="field.campaign">Campaign</span>
+            <select id="c-campaign" required></select>
+          </label>
+          <label class="field">
+            <span data-i18n="field.paymentPlan">Payment Plan</span>
+            <select id="c-plan" required></select>
+          </label>
+          <div class="suggested" id="plan-hint" style="display:none"></div>
+          <label class="field"><span data-i18n="field.finalDeadline">Final payment deadline (optional)</span><input type="date" id="c-deadline" /></label>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn secondary" onclick="closeModal('customer-modal')" data-i18n="btn.cancel">Cancel</button>
+          <button type="submit" class="btn" data-i18n="btn.saveCustomer">Save Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/customers.js"></script>
+</body>
+</html>

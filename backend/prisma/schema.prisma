@@ -1,0 +1,130 @@
+// Prisma schema for the Payment Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  super_admin
+  manager
+}
+
+enum CustomerStatus {
+  paid
+  has_debt
+}
+
+enum PaymentMethod {
+  cash
+  epay
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(manager)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  managedCampaigns  CampaignManager[]
+  receivedPayments  Payment[]         @relation("ReceivedBy")
+
+  @@map("users")
+}
+
+model Campaign {
+  id              Int      @id @default(autoincrement())
+  name            String
+  price           Float
+  maxInstallments Int      @map("max_installments")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  managers  CampaignManager[]
+  customers Customer[]
+
+  @@map("campaigns")
+}
+
+model CampaignManager {
+  campaignId Int @map("campaign_id")
+  managerId  Int @map("manager_id")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  manager  User     @relation(fields: [managerId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, managerId])
+  @@map("campaign_managers")
+}
+
+model Customer {
+  id              Int            @id @default(autoincrement())
+  firstName       String         @map("first_name")
+  lastName        String         @map("last_name")
+  phone           String
+  campaignId      Int            @map("campaign_id")
+  paymentPlan     String         @map("payment_plan") // "full" | "2" | "3" | "4" | "5"
+  totalAmount     Float          @map("total_amount")
+  amountPaid      Float          @default(0) @map("amount_paid")
+  remainingDebt   Float          @map("remaining_debt")
+  lastPaymentDate DateTime?      @map("last_payment_date")
+  status          CustomerStatus @default(has_debt)
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  // Payment-link settings a manager can configure for the customer's public link.
+  payNote      String?  @map("pay_note")
+  payMinAmount Float?   @map("pay_min_amount")
+  payLinkActive Boolean @default(true) @map("pay_link_active") // false = manager cancelled the link
+
+  campaign     Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+  installments Installment[]
+
+  @@map("customers")
+}
+
+// A scheduled partial-payment deadline for a customer (installment plan).
+// amountDue is the cumulative amount that should be paid by this installment.
+model Installment {
+  id         Int      @id @default(autoincrement())
+  customerId Int      @map("customer_id")
+  sequence   Int
+  dueDate    DateTime @map("due_date")
+  amountDue  Float    @map("amount_due")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, sequence])
+  @@map("installments")
+}
+
+model Payment {
+  id                  Int           @id @default(autoincrement())
+  customerId          Int           @map("customer_id")
+  amount              Float
+  method              PaymentMethod @default(cash)
+  status              PaymentStatus @default(completed)
+  providerRef         String?       @map("provider_ref") // gateway order / transaction id (EPAY)
+  paidAt              DateTime      @default(now()) @map("paid_at")
+  receivedByManagerId Int?          @map("received_by_manager_id") // null = customer self-service (online)
+  note                String?
+  createdAt           DateTime      @default(now()) @map("created_at")
+
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  receivedBy User?    @relation("ReceivedBy", fields: [receivedByManagerId], references: [id])
+
+  @@map("payments")
+}

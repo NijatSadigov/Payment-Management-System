@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hədəf Payment Manager</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <div class="page-header">
+        <a class="btn ghost sm" href="/customers.html" data-i18n="btn.back">← Back to customers</a>
+        <button class="btn" id="add-payment-btn" data-i18n="btn.addPayment">+ Add Payment</button>
+      </div>
+
+      <div class="card">
+        <div class="detail-hero">
+          <span id="hero-avatar"></span>
+          <div class="meta">
+            <h2 id="customer-name">Customer</h2>
+            <div class="sub" id="customer-sub"></div>
+          </div>
+          <div style="margin-left:auto" id="detail-status"></div>
+        </div>
+        <div class="info-grid" id="info-grid"></div>
+        <div class="pay-summary" id="pay-summary"></div>
+        <div class="suggested" id="suggested-box"></div>
+        <div class="paylink-box" id="paylink-box"></div>
+      </div>
+
+      <div class="card" id="schedule-card">
+        <div class="card-head">
+          <h2 data-i18n="sec.schedule">Payment Schedule</h2>
+          <button class="btn secondary sm" id="schedule-save" data-i18n="sched.save">Save schedule</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th.installment">Installment</th>
+                <th data-i18n="th.dueDate">Due date</th>
+                <th class="text-right" data-i18n="th.amount">Amount</th>
+                <th data-i18n="th.status">Status</th>
+              </tr>
+            </thead>
+            <tbody id="schedule-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2 data-i18n="cust.paymentHistory">Payment History</h2><span class="hint" id="payment-count"></span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th.date">Date</th>
+                <th data-i18n="th.time">Time</th>
+                <th class="text-right" data-i18n="th.amount">Amount</th>
+                <th data-i18n="th.method">Method</th>
+                <th data-i18n="th.receivedBy">Received By</th>
+                <th data-i18n="th.note">Note</th>
+              </tr>
+            </thead>
+            <tbody id="payments-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Payment modal -->
+  <div class="modal-overlay" id="payment-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 data-i18n="modal.addPayment">Add Payment</h3>
+        <button class="close" onclick="closeModal('payment-modal')">&times;</button>
+      </div>
+      <form id="payment-form">
+        <div class="modal-body">
+          <div class="suggested" id="pay-remaining"></div>
+
+          <label class="field"><span data-i18n="pay.method">Payment Method</span></label>
+          <div class="method-options">
+            <label class="method-opt selected" data-method="cash">
+              <input type="radio" name="pmethod" value="cash" checked />
+              <span class="mi" id="mi-cash"></span>
+              <span class="mt" data-i18n="pay.cash">Cash / in person</span>
+            </label>
+            <label class="method-opt" data-method="epay">
+              <input type="radio" name="pmethod" value="epay" />
+              <span class="mi" id="mi-epay"></span>
+              <span class="mt" data-i18n="pay.online">Online card (EPAY)</span>
+            </label>
+          </div>
+
+          <label class="field"><span data-i18n="field.amount">Amount (AZN)</span><input type="number" id="p-amount" min="0.01" step="0.01" required /></label>
+          <div class="error-text" id="pay-error"></div>
+          <label class="field"><span><span data-i18n="field.noteOptional">Note</span> <small data-i18n="field.optional">(optional)</small></span><textarea id="p-note"></textarea></label>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn secondary" onclick="closeModal('payment-modal')" data-i18n="btn.cancel">Cancel</button>
+          <button type="submit" class="btn" id="pay-submit" data-i18n="pay.recordCash">Record Cash Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/customer.js"></script>
+</body>
+</html>

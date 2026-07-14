@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hədəf Payment Manager</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1 data-i18n="page.campaigns">Campaigns</h1>
+          <div class="subtitle" data-i18n="page.campaignsSub">Set prices, installment limits and assign managers.</div>
+        </div>
+        <button class="btn" id="add-btn" data-i18n="btn.addCampaign">+ Add Campaign</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th.name">Name</th>
+                <th class="text-right" data-i18n="th.price">Price</th>
+                <th class="text-right" data-i18n="th.maxInstallments">Max Installments</th>
+                <th data-i18n="th.assignedManagers">Assigned Managers</th>
+                <th class="text-right" data-i18n="th.actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="campaigns-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="campaign-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title" data-i18n="modal.addCampaign">Add Campaign</h3>
+        <button class="close" onclick="closeModal('campaign-modal')">&times;</button>
+      </div>
+      <form id="campaign-form">
+        <div class="modal-body">
+          <input type="hidden" id="campaign-id" />
+          <label class="field"><span data-i18n="field.campaignName">Campaign Name</span><input id="name" required /></label>
+          <div class="form-grid">
+            <label class="field"><span data-i18n="field.price">Price (AZN)</span><input type="number" id="price" min="0" step="0.01" required /></label>
+            <label class="field">
+              <span data-i18n="field.maxInstallments">Max Installments</span>
+              <select id="maxInstallments" required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </label>
+          </div>
+          <label class="field">
+            <span data-i18n="field.assignManagers">Assign Managers</span>
+          </label>
+          <div class="checklist" id="managerIds"></div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn secondary" onclick="closeModal('campaign-modal')" data-i18n="btn.cancel">Cancel</button>
+          <button type="submit" class="btn" data-i18n="btn.saveCampaign">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/campaigns.js"></script>
+</body>
+</html>

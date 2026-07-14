@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hədəf Payment Manager</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <span id="logo-slot"></span>
+        <div class="name">Hədəf<small data-i18n="brand.tagline">Payment Manager</small></div>
+      </div>
+      <h1 data-i18n="login.welcome">Welcome back</h1>
+      <p class="subtitle" data-i18n="login.subtitle">Sign in to manage campaigns and payments.</p>
+      <form id="login-form">
+        <label class="field">
+          <span data-i18n="login.email">Email</span>
+          <input type="email" id="email" placeholder="you@system.com" required autocomplete="username" />
+        </label>
+        <label class="field">
+          <span data-i18n="login.password">Password</span>
+          <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
+        </label>
+        <div class="error-text" id="login-error"></div>
+        <button class="btn" type="submit" style="width:100%" id="login-btn" data-i18n="login.signin">Sign In</button>
+      </form>
+
+      <div class="login-hint">
+        <b data-i18n="login.quick">Quick demo login</b>
+        <div class="btn-group" style="margin-top:10px">
+          <button class="btn secondary sm" data-demo="super" data-i18n="login.super">Super Admin</button>
+          <button class="btn secondary sm" data-demo="m1" data-i18n="login.manager1">Manager 1</button>
+          <button class="btn secondary sm" data-demo="m2" data-i18n="login.manager2">Manager 2</button>
+        </div>
+        <div style="margin-top:8px" data-i18n="login.demoNote">One click signs you in with a demo account.</div>
+      </div>
+
+      <div class="login-lang" id="login-lang"></div>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.getElementById('logo-slot').innerHTML = logoMark(46);
+    document.getElementById('login-lang').innerHTML = langSwitcher('light');
+
+    const DEMO = {
+      super: { email: 'admin@system.com', password: 'admin123' },
+      m1: { email: 'manager1@system.com', password: 'manager1' },
+      m2: { email: 'manager2@system.com', password: 'manager2' },
+    };
+
+    // If already logged in, go to the right home page.
+    const existing = currentUser();
+    if (existing) {
+      window.location.href = existing.role === 'super_admin' ? '/dashboard.html' : '/manager-dashboard.html';
+    }
+
+    async function signIn(email, password) {
+      const errBox = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
+      errBox.textContent = '';
+      btn.disabled = true;
+      btn.textContent = t('login.signingIn');
+      try {
+        const user = await doLogin(email, password);
+        window.location.href = user.role === 'super_admin' ? '/dashboard.html' : '/manager-dashboard.html';
+      } catch (err) {
+        errBox.textContent = err.message || t('login.failed');
+        btn.disabled = false;
+        btn.textContent = t('login.signin');
+      }
+    }
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      signIn(document.getElementById('email').value.trim(), document.getElementById('password').value);
+    });
+
+    // One-click demo logins.
+    document.querySelectorAll('[data-demo]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const d = DEMO[b.dataset.demo];
+        document.getElementById('email').value = d.email;
+        document.getElementById('password').value = d.password;
+        signIn(d.email, d.password);
+      });
+    });
+  </script>
+</body>
+</html>

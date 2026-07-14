@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epoint — Hədəf</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="epay-wrap">
+    <div class="epay-card">
+      <div class="epay-top">
+        <div class="brand" id="epay-brand"></div>
+        <span class="epay-sandbox-tag" id="epay-tag"></span>
+      </div>
+      <div class="epay-body" id="epay-body">
+        <div class="empty"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    const returnTo = params.get('return') || '/customers.html';
+
+    document.getElementById('epay-brand').innerHTML = logoMark(24) + ' Epoint';
+
+    // Redirect back to the app with a result flag appended.
+    function goBack(result) {
+      const sep = returnTo.includes('?') ? '&' : '?';
+      window.location.href = `${returnTo}${sep}epay=${result}`;
+    }
+
+    function renderNotFound() {
+      document.getElementById('epay-tag').textContent = '';
+      document.getElementById('epay-body').innerHTML = `
+        <div class="empty">
+          <div class="title">${t('epay.notfound')}</div>
+        </div>
+        <div class="epay-actions">
+          <button class="btn secondary" onclick="goBack('cancel')">${t('epay.cancel')}</button>
+        </div>`;
+    }
+
+    async function complete(outcome) {
+      const body = document.getElementById('epay-body');
+      body.innerHTML = `<div class="empty"><div class="spinner"></div><div class="sub" style="margin-top:12px">${t('epay.processing')}</div></div>`;
+      try {
+        const res = await fetch('/api/epay/sandbox/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ref, outcome }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          body.innerHTML = `<div class="empty"><div class="icon">${icon('check', 26)}</div><div class="title">${t('epay.done')}</div></div>`;
+          setTimeout(() => goBack('success'), 1200);
+        } else {
+          body.innerHTML = `<div class="empty"><div class="title">${t('epay.declined')}</div></div>`;
+          setTimeout(() => goBack('declined'), 1200);
+        }
+      } catch {
+        goBack('declined');
+      }
+    }
+
+    async function load() {
+      document.getElementById('epay-tag').textContent = t('epay.sandbox');
+      if (!ref) return renderNotFound();
+      let order;
+      try {
+        const res = await fetch('/api/epay/order/' + encodeURIComponent(ref));
+        if (!res.ok) return renderNotFound();
+        order = await res.json();
+      } catch {
+        return renderNotFound();
+      }
+      if (order.status !== 'pending') return renderNotFound();
+
+      document.getElementById('epay-body').innerHTML = `
+        <div class="epay-amount">
+          <div class="lbl">${t('epay.amountLabel')}</div>
+          <div class="amt">${formatMoney(order.amount)}</div>
+        </div>
+        <div class="epay-rows">
+          <div class="row"><span class="k">${t('epay.order')}</span><span class="mono">${escapeHtml(order.orderRef)}</span></div>
+          <div class="row"><span class="k">${t('epay.merchant')}</span><span>${escapeHtml(order.merchant)}</span></div>
+          <div class="row"><span class="k">${t('epay.customer')}</span><span>${escapeHtml(order.customerName)}</span></div>
+          <div class="row"><span class="k">${t('th.campaign')}</span><span>${escapeHtml(order.campaignName || '—')}</span></div>
+        </div>
+        <div class="epay-actions">
+          <button class="btn" style="justify-content:center" id="pay-btn">${icon('lock', 16)} ${t('epay.pay')} ${formatMoney(order.amount)}</button>
+          <button class="btn secondary" style="justify-content:center" id="cancel-btn">${t('epay.cancel')}</button>
+          <button class="epay-fail-btn" id="fail-btn">${t('epay.fail')}</button>
+        </div>
+        <div class="epay-note">${t('epay.note')}</div>`;
+
+      document.getElementById('pay-btn').onclick = () => complete('success');
+      document.getElementById('fail-btn').onclick = () => complete('fail');
+      document.getElementById('cancel-btn').onclick = () => goBack('cancel');
+    }
+
+    load();
+  </script>
+</body>
+</html>

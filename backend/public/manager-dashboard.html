@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hədəf Payment Manager</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1 data-i18n="dash.myTitle">My Dashboard</h1>
+          <div class="subtitle" data-i18n="dash.mySubtitle">Your campaigns, collections and outstanding debt.</div>
+        </div>
+        <div class="period-tabs" id="period-tabs">
+          <button data-period="daily" data-i18n="period.daily">Daily</button>
+          <button data-period="weekly" data-i18n="period.weekly">Weekly</button>
+          <button data-period="monthly" class="active" data-i18n="period.monthly">Monthly</button>
+          <button data-period="yearly" data-i18n="period.yearly">Yearly</button>
+        </div>
+      </div>
+
+      <div class="stat-grid" id="stat-grid"></div>
+
+      <div class="card">
+        <div class="card-head"><h2 data-i18n="sec.myCollections">My Collections Over Time</h2><span class="hint" data-i18n="sec.latest12">Latest 12 periods</span></div>
+        <div id="timeline-chart"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2 data-i18n="sec.myCampaigns">My Campaigns</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th.campaign">Campaign</th>
+                <th class="text-right" data-i18n="th.customers">Customers</th>
+                <th class="text-right" data-i18n="th.revenue">Revenue</th>
+                <th class="text-right" data-i18n="th.outstandingDebt">Outstanding Debt</th>
+                <th data-i18n="th.collectionProgress">Collection Progress</th>
+              </tr>
+            </thead>
+            <tbody id="campaign-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script>initDashboard('manager', 'dashboard');</script>
+</body>
+</html>
