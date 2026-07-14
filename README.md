@@ -17,6 +17,10 @@
 
 ## Overview
 
+> **Note:** This repository is a **public demo / showcase build**. The production version delivered to
+> the client is extended with additional company-specific features and integrations that are kept
+> private — this build demonstrates the core system and architecture.
+
 A system built for a multi-campaign education business to replace manual/spreadsheet payment
 tracking. A **Super Admin** manages managers, campaigns, and pricing and sees everything; each
 **Manager** works only within the campaigns assigned to them. Customers pick a payment plan (full or
@@ -34,14 +38,23 @@ is available in **Azerbaijani, English, and Russian**.
 
 ## Screenshots
 
-> _Add screenshots here once deployed (login, dashboard, customer detail, customer payment page)._
-
-<!--
+### Super Admin dashboard
 ![Dashboard](docs/screenshots/dashboard.png)
-![Customers](docs/screenshots/customers.png)
-![Customer detail](docs/screenshots/customer.png)
-![Payment page](docs/screenshots/pay.png)
--->
+
+<table>
+  <tr>
+    <td width="50%"><b>Customers — sortable, next-payment &amp; overdue tracking</b><br/><img src="docs/screenshots/customers.png" alt="Customers list"/></td>
+    <td width="50%"><b>Customer detail — schedule, payment link &amp; history</b><br/><img src="docs/screenshots/customer.png" alt="Customer detail"/></td>
+  </tr>
+  <tr>
+    <td width="50%"><b>Customer self-service payment page (no login)</b><br/><img src="docs/screenshots/pay.png" alt="Customer payment page"/></td>
+    <td width="50%"><b>Epoint checkout (sandbox)</b><br/><img src="docs/screenshots/epoint-checkout.png" alt="Epoint checkout"/></td>
+  </tr>
+  <tr>
+    <td width="50%"><b>Login</b><br/><img src="docs/screenshots/login.png" alt="Login"/></td>
+    <td width="50%"><b>Campaigns</b><br/><img src="docs/screenshots/campaigns.png" alt="Campaigns"/></td>
+  </tr>
+</table>
 
 ---
 
