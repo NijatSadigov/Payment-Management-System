@@ -3,8 +3,7 @@
 The app is a Node.js server with a PostgreSQL database. On cPanel it runs through
 **Setup Node.js App**; the database is created in **PostgreSQL Databases**.
 
-The examples below use `pay.hedefliseyi.az` — use the subdomain you actually have
-(cPanel → **Domains**).
+The app is served at `pay.hedefliseyi.edu.az` (cPanel → **Domains**).
 
 ## 1. Build the upload package (on your computer)
 
@@ -44,10 +43,10 @@ cPanel → **Setup Node.js App** → **Create Application**:
 
 | Field               | Value                                   |
 | ------------------- | --------------------------------------- |
-| Node.js version     | the highest offered (18 or newer)       |
+| Node.js version     | the highest offered — **must be 18+** (the form defaults to 10, which won't work) |
 | Application mode    | **Production**                          |
 | Application root    | `hadaf-payments`                        |
-| Application URL     | `pay.hedefliseyi.az`                    |
+| Application URL     | `pay.hedefliseyi.edu.az`                    |
 | Startup file        | `dist/index.js`                         |
 
 Under **Environment variables** add:
@@ -56,7 +55,7 @@ Under **Environment variables** add:
 | -------------- | -------------------------------------------------------------- |
 | `DATABASE_URL` | the connection string from step 2                              |
 | `JWT_SECRET`   | a random string, at least 32 characters (see below)            |
-| `APP_BASE_URL` | `https://pay.hedefliseyi.az`                                   |
+| `APP_BASE_URL` | `https://pay.hedefliseyi.edu.az`                                   |
 | `EPOINT_MODE`  | `sandbox` (online payments stay off until you have Epoint keys) |
 
 Make a `JWT_SECRET` on your computer with:
@@ -86,7 +85,7 @@ Back in **Setup Node.js App** → edit the application:
 4. **Delete** `ADMIN_EMAIL` and `ADMIN_PASSWORD` again and **Save**.
 5. **Start App** (or **Restart**).
 
-Open `https://pay.hedefliseyi.az` and sign in with that email and password. Then
+Open `https://pay.hedefliseyi.edu.az` and sign in with that email and password. Then
 add campaigns and managers from the admin screens.
 
 If your cPanel has **Terminal**, steps 2–3 can be done there instead. Copy the
@@ -119,7 +118,7 @@ Once Epoint gives you merchant keys:
 1. Set `EPOINT_MODE=live`, `EPOINT_PUBLIC_KEY` and `EPOINT_PRIVATE_KEY`, then
    **Restart**.
 2. In the Epoint merchant panel, set the result/callback URL to
-   `https://pay.hedefliseyi.az/api/epay/epoint-callback`.
+   `https://pay.hedefliseyi.edu.az/api/epay/epoint-callback`.
 3. Make a small real payment to check that it shows up as completed.
 
 The live Epoint path has not been tested yet. Until it is turned on, customers can
