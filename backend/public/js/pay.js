@@ -1,5 +1,8 @@
 // Public customer self-service payment portal (no login).
-const payToken = new URLSearchParams(window.location.search).get('token');
+// Reached via /p/<customer code> (e.g. /p/Sadigov-NS4K7QX), or bare /p which
+// asks for a code.
+const codeMatch = window.location.pathname.match(/^\/p\/([^/]+)\/?$/);
+const customerCode = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
 let portalData = null;
 
 (function init() {
@@ -10,25 +13,41 @@ let portalData = null;
 })();
 
 async function load() {
-  const host = document.getElementById('portal-content');
-  if (!payToken) return renderInvalid();
+  if (!customerCode) return renderLookup();
   try {
-    const res = await fetch('/api/pay/' + encodeURIComponent(payToken));
-    if (!res.ok) return renderInvalid();
+    const res = await fetch('/api/pay/' + encodeURIComponent(customerCode));
+    if (res.status === 429) return renderLookup(t('lookup.tooMany'), customerCode);
+    if (!res.ok) return renderLookup(t('lookup.notFound'), customerCode);
     portalData = await res.json();
   } catch {
-    return renderInvalid();
+    return renderLookup(t('lookup.notFound'), customerCode);
   }
   if (portalData.active === false) return renderClosed();
   render();
 }
 
-function renderInvalid() {
+// "Check your payments" form: the customer types their code.
+function renderLookup(error, value) {
   document.getElementById('portal-content').innerHTML = `
-    <div class="empty">
-      <div class="icon">${icon('lock', 26)}</div>
-      <div class="title">${t('portal.invalid')}</div>
-    </div>`;
+    <h1 style="font-size:20px">${t('lookup.title')}</h1>
+    <p class="subtitle">${t('lookup.subtitle')}</p>
+    <form id="lookup-form" style="margin-top:16px">
+      <label class="field"><span>${t('code.label')}</span>
+        <input id="lookup-code" required autocomplete="off" autocapitalize="off" spellcheck="false"
+          placeholder="${escapeHtml(t('lookup.placeholder'))}" value="${escapeHtml(value || '')}" />
+      </label>
+      <div class="error-text" id="lookup-err">${error ? escapeHtml(error) : ''}</div>
+      <button class="btn" type="submit" style="width:100%">${t('lookup.submit')}</button>
+    </form>`;
+  const input = document.getElementById('lookup-code');
+  input.focus();
+  document.getElementById('lookup-form').onsubmit = (e) => {
+    e.preventDefault();
+    // Codes are letters, digits and a dash; ignore spaces etc. people may type.
+    const code = input.value.replace(/[^A-Za-z0-9-]/g, '');
+    if (!code) return;
+    window.location.href = '/p/' + encodeURIComponent(code);
+  };
 }
 
 function renderClosed() {
@@ -52,6 +71,7 @@ function render() {
   const summary = `
     <h1 style="font-size:20px">${escapeHtml(t('portal.greeting', { name: c.firstName }))}</h1>
     <p class="subtitle">${t('portal.subtitle')}${c.campaignName ? ' · ' + escapeHtml(c.campaignName) : ''}</p>
+    ${c.code ? `<div class="muted-text" style="font-size:12.5px;margin-top:4px">${escapeHtml(t('portal.yourCode', { code: c.code }))}</div>` : ''}
     <div class="pay-summary" style="padding:0;margin:14px 0 18px">
       <div class="bar-big"><div style="width:${pct}%"></div></div>
       <div class="legend">
@@ -114,7 +134,9 @@ function render() {
        </div>`
     : '';
 
-  host.innerHTML = summary + payBlock + history;
+  const other = `<div style="text-align:center;margin-top:16px"><a class="btn ghost sm" href="/p">${t('lookup.other')}</a></div>`;
+
+  host.innerHTML = summary + payBlock + history + other;
 
   if (c.status !== 'paid' && c.remainingDebt > 0) {
     document.getElementById('p-amount').addEventListener('input', validate);
@@ -153,7 +175,7 @@ async function payNow() {
   const amount = Number(document.getElementById('p-amount').value);
   showSpinner();
   try {
-    const res = await fetch('/api/pay/' + encodeURIComponent(payToken) + '/epay', {
+    const res = await fetch('/api/pay/' + encodeURIComponent(customerCode) + '/epay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount, language: currentLang() }),
@@ -175,6 +197,5 @@ function handleReturn() {
   if (!result) return;
   if (result === 'success') toast(t('pay.epaySuccess'), 'success');
   else if (result === 'declined' || result === 'cancel') toast(t('pay.epayFailed'), 'error');
-  const clean = `/pay.html?token=${encodeURIComponent(payToken)}`;
-  window.history.replaceState({}, '', clean);
+  window.history.replaceState({}, '', window.location.pathname);
 }

@@ -82,11 +82,15 @@ is available in **Azerbaijani, English, and Russian**.
 - The customer list is **sortable** by any column (name, campaign, totals, progress, next payment, status).
 
 ### 🔗 Customer self-service payment links
-- Each customer has a **stateless, signed, no-login link** (`/pay.html?token=…`) a manager copies and
-  sends by SMS/WhatsApp/email; the customer views their balance and pays online from home.
+- Each customer gets a readable **customer code** like `Sadigov-NS4K7QX`: their surname, a 2-character
+  tag of the manager who created them (shown on the Managers page), and 5 random characters.
+- Their no-login link is `/p/<code>` (e.g. `/p/Sadigov-NS4K7QX`), which a manager copies and sends by
+  SMS/WhatsApp/email; the customer views their balance and pays online from home.
+- Customers can also open **`/p`** (linked from the login page), type their code, and see their payments.
+  Wrong-code lookups are rate-limited per IP to stop guessing.
 - Configurable per link: a **message** to the customer, a **minimum payment** (defaults to the
   suggested installment, auto-capped at remaining debt), and **cancel/reactivate**.
-- Self-service payments are **credited to the manager whose link the customer used**.
+- Self-service payments are **credited to the manager who created the customer** (the tag in the code).
 - A link stays valid until the customer is **fully paid** or the manager **cancels** it.
 
 ### 📊 Statistics & exports

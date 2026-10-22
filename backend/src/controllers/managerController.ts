@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma';
+import { userCodeTag } from '../lib/customerCode';
 
 // Shape returned to the client (never expose the password hash).
 function serialize(user: {
@@ -9,6 +10,7 @@ function serialize(user: {
   lastName: string;
   email: string;
   role: string;
+  codeTag?: string | null;
   createdAt: Date;
   managedCampaigns?: { campaign: { id: number; name: string } }[];
 }) {
@@ -18,6 +20,7 @@ function serialize(user: {
     lastName: user.lastName,
     email: user.email,
     role: user.role,
+    codeTag: user.codeTag ?? null,
     createdAt: user.createdAt,
     campaigns: (user.managedCampaigns || []).map((m) => m.campaign),
   };
@@ -57,6 +60,7 @@ export async function createManager(req: Request, res: Response) {
     },
     include: { managedCampaigns: { include: { campaign: true } } },
   });
+  manager.codeTag = await userCodeTag(manager.id);
 
   res.status(201).json(serialize(manager));
 }

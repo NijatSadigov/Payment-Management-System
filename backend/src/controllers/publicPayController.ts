@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { parsePayToken } from '../lib/payToken';
+import { findCustomerByCode } from '../lib/customerCode';
 import { campaignPrimaryManagerId } from '../lib/scope';
 import { suggestedNextPayment, round2 } from '../lib/payment';
 import { computeNextDue } from '../lib/schedule';
@@ -14,23 +14,65 @@ function effectiveMin(payMinAmount: number | null, suggested: number, remaining:
   return round2(Math.min(base, remaining));
 }
 
-// The manager to credit: the user who sent the link (if a manager), else the
-// campaign's assigned manager.
+// The manager to credit: the user who created the customer (if a manager),
+// else the campaign's assigned manager.
 async function resolveCreditManager(
-  senderId: number | null,
+  creatorId: number | null,
   campaignId: number,
 ): Promise<number | null> {
-  if (senderId) {
-    const u = await prisma.user.findUnique({ where: { id: senderId } });
-    if (u && u.role === 'manager') return senderId;
+  if (creatorId) {
+    const u = await prisma.user.findUnique({ where: { id: creatorId } });
+    if (u && u.role === 'manager') return creatorId;
   }
   return campaignPrimaryManagerId(campaignId);
 }
 
-// Public, tokenized customer view — no login.
+// Failed-lookup throttle so codes (name + a few digits) can't be brute-forced.
+const FAIL_WINDOW_MS = 15 * 60 * 1000;
+const MAX_FAILS = 20;
+const failures = new Map<string, { count: number; since: number }>();
+
+function tooManyFailures(ip: string): boolean {
+  const f = failures.get(ip);
+  if (!f) return false;
+  if (Date.now() - f.since > FAIL_WINDOW_MS) {
+    failures.delete(ip);
+    return false;
+  }
+  return f.count >= MAX_FAILS;
+}
+
+function recordFailure(ip: string) {
+  const f = failures.get(ip);
+  if (!f || Date.now() - f.since > FAIL_WINDOW_MS) failures.set(ip, { count: 1, since: Date.now() });
+  else f.count++;
+}
+
+interface LinkTarget {
+  customerId: number;
+  creatorId: number | null;
+}
+
+// Resolves the customer code in a public link (/p/Sadigov-NS4K7QX).
+async function resolveLink(req: Request, res: Response): Promise<LinkTarget | null> {
+  const ip = req.ip || 'unknown';
+  if (tooManyFailures(ip)) {
+    res.status(429).json({ error: 'Too many attempts. Please try again later.' });
+    return null;
+  }
+  const customer = await findCustomerByCode(String(req.params.code || ''));
+  const parsed = customer ? { customerId: customer.id, creatorId: customer.createdById ?? null } : null;
+  if (!parsed) {
+    recordFailure(ip);
+    res.status(404).json({ error: 'Invalid payment link' });
+  }
+  return parsed;
+}
+
+// Public customer view by code — no login.
 export async function getPublicCustomer(req: Request, res: Response) {
-  const parsed = parsePayToken(String(req.params.token));
-  if (!parsed) return res.status(404).json({ error: 'Invalid payment link' });
+  const parsed = await resolveLink(req, res);
+  if (!parsed) return;
 
   const customer = await prisma.customer.findUnique({
     where: { id: parsed.customerId },
@@ -58,6 +100,7 @@ export async function getPublicCustomer(req: Request, res: Response) {
 
   res.json({
     active: true,
+    code: customer.code,
     firstName: customer.firstName,
     lastName: customer.lastName,
     campaignName: customer.campaign?.name ?? null,
@@ -79,8 +122,8 @@ export async function getPublicCustomer(req: Request, res: Response) {
 
 // Public: a customer starts an online (EPAY) payment on their own balance.
 export async function initPublicEpay(req: Request, res: Response) {
-  const parsed = parsePayToken(String(req.params.token));
-  if (!parsed) return res.status(404).json({ error: 'Invalid payment link' });
+  const parsed = await resolveLink(req, res);
+  if (!parsed) return;
 
   const customer = await prisma.customer.findUnique({ where: { id: parsed.customerId } });
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
@@ -106,9 +149,9 @@ export async function initPublicEpay(req: Request, res: Response) {
     return res.status(400).json({ error: `Minimum payment is ${min.toFixed(2)} AZN`, minAmount: min });
   }
 
-  const managerId = await resolveCreditManager(parsed.senderId, customer.campaignId);
+  const managerId = await resolveCreditManager(parsed.creatorId, customer.campaignId);
   const result = await beginEpayPayment(customer.id, value, null, managerId, {
-    returnPath: `/pay.html?token=${encodeURIComponent(String(req.params.token))}`,
+    returnPath: `/p/${encodeURIComponent(customer.code!)}`,
     language: req.body?.language,
     description: `Payment — ${customer.firstName} ${customer.lastName}`,
   });

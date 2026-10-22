@@ -14,7 +14,7 @@ const router = Router();
 router.use('/auth', authRoutes);
 // EPAY gateway callbacks are public (signature-verified), not user-authenticated.
 router.use('/epay', epayRoutes);
-// Customer self-service payment portal is public (tokenized links).
+// Customer self-service payment portal is public (customer-code links).
 router.use('/pay', payRoutes);
 
 // Everything below requires a valid token.

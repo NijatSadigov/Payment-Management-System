@@ -4,6 +4,7 @@ import 'express-async-errors';
 import cors from 'cors';
 import { config } from './config';
 import apiRoutes from './routes';
+import { backfillCustomerCodes } from './lib/customerCode';
 
 const app = express();
 
@@ -16,6 +17,12 @@ app.use('/api', apiRoutes);
 // Serve the frontend from /public.
 const publicDir = path.join(__dirname, '..', 'public');
 app.use(express.static(publicDir));
+
+// Customer portal: /p asks for a customer code, /p/<code> shows that
+// customer's payments (both handled by pay.html).
+app.get(['/p', '/p/:code'], (_req, res) => {
+  res.sendFile(path.join(publicDir, 'pay.html'));
+});
 
 // Root serves the login page.
 app.get('/', (_req, res) => {
@@ -38,4 +45,5 @@ app.use(
 
 app.listen(config.port, () => {
   console.log(`Payment Management System running at http://localhost:${config.port}`);
+  backfillCustomerCodes().catch((err) => console.error('Customer code backfill failed', err));
 });

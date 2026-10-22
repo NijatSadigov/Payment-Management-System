@@ -38,6 +38,7 @@ export async function buildCustomerWhere(
       OR: [
         { firstName: { contains: term, mode: 'insensitive' } },
         { lastName: { contains: term, mode: 'insensitive' } },
+        { code: { contains: term, mode: 'insensitive' } },
       ],
     });
   }

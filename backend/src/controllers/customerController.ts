@@ -4,10 +4,11 @@ import { customerScopeFilter, managerCampaignIds } from '../lib/scope';
 import { buildCustomerWhere } from '../lib/customerFilter';
 import { installmentCount, suggestedNextPayment, round2 } from '../lib/payment';
 import { buildSchedule, computeNextDue } from '../lib/schedule';
-import { makePayToken } from '../lib/payToken';
+import { generateCustomerCode } from '../lib/customerCode';
 
 interface CustomerRow {
   id: number;
+  code: string | null;
   firstName: string;
   lastName: string;
   phone: string;
@@ -26,14 +27,13 @@ interface CustomerRow {
   installments?: { sequence: number; dueDate: Date; amountDue: number }[];
 }
 
-// viewerId is embedded into the pay link so self-service payments made via a
-// link credit the user who generated/sent it.
-function serialize(customer: CustomerRow, viewerId: number | null) {
+function serialize(customer: CustomerRow) {
   const installments = (customer.installments || []).sort((a, b) => a.sequence - b.sequence);
   const nd = computeNextDue(installments, customer.amountPaid, customer.remainingDebt);
 
   return {
     id: customer.id,
+    code: customer.code,
     firstName: customer.firstName,
     lastName: customer.lastName,
     phone: customer.phone,
@@ -51,7 +51,6 @@ function serialize(customer: CustomerRow, viewerId: number | null) {
       customer.remainingDebt,
       customer.paymentPlan,
     ),
-    payToken: makePayToken(customer.id, viewerId),
     payNote: customer.payNote ?? null,
     payMinAmount: customer.payMinAmount ?? null,
     payLinkActive: customer.payLinkActive ?? true,
@@ -82,7 +81,7 @@ export async function listCustomers(req: Request, res: Response) {
     orderBy: { createdAt: 'desc' },
     include: includeRels,
   });
-  res.json(customers.map((c) => serialize(c, req.user!.id)));
+  res.json(customers.map((c) => serialize(c)));
 }
 
 export async function getCustomer(req: Request, res: Response) {
@@ -95,7 +94,7 @@ export async function getCustomer(req: Request, res: Response) {
   if (!customer) {
     return res.status(404).json({ error: 'Customer not found' });
   }
-  res.json(serialize(customer, req.user!.id));
+  res.json(serialize(customer));
 }
 
 export async function createCustomer(req: Request, res: Response) {
@@ -137,6 +136,8 @@ export async function createCustomer(req: Request, res: Response) {
     data: {
       firstName,
       lastName,
+      code: await generateCustomerCode(lastName, req.user!.id),
+      createdById: req.user!.id,
       phone,
       campaignId: Number(campaignId),
       paymentPlan: plan,
@@ -159,7 +160,7 @@ export async function createCustomer(req: Request, res: Response) {
   });
 
   const full = await prisma.customer.findUnique({ where: { id: customer.id }, include: includeRels });
-  res.status(201).json(serialize(full!, req.user!.id));
+  res.status(201).json(serialize(full!));
 }
 
 export async function updateCustomer(req: Request, res: Response) {
@@ -193,7 +194,7 @@ export async function updateCustomer(req: Request, res: Response) {
     include: includeRels,
   });
 
-  res.json(serialize(updated, req.user!.id));
+  res.json(serialize(updated));
 }
 
 // Update the due dates of a customer's installment schedule.
@@ -220,5 +221,5 @@ export async function updateSchedule(req: Request, res: Response) {
   );
 
   const updated = await prisma.customer.findUnique({ where: { id }, include: includeRels });
-  res.json(serialize(updated!, req.user!.id));
+  res.json(serialize(updated!));
 }

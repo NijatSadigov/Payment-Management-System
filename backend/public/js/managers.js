@@ -37,7 +37,7 @@ async function loadManagers() {
         : `<span style="color:#94a3b8">${t('cust.none')}</span>`;
       return `
         <tr>
-          <td><div class="cell-user">${avatar(m.firstName, m.lastName, 'sm')}<span class="strong">${escapeHtml(m.firstName)} ${escapeHtml(m.lastName)}</span></div></td>
+          <td><div class="cell-user">${avatar(m.firstName, m.lastName, 'sm')}<span><span class="strong">${escapeHtml(m.firstName)} ${escapeHtml(m.lastName)}</span>${m.codeTag ? `<div class="muted-text" style="font-size:11.5px">${t('mgr.codeTag')}: <b class="mono">${escapeHtml(m.codeTag)}</b></div>` : ''}</span></div></td>
           <td class="muted-text">${escapeHtml(m.email)}</td>
           <td>${campaigns}</td>
           <td class="text-right">

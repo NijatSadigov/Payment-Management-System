@@ -107,7 +107,7 @@ function dateInputValue(v) {
 function renderPayLink(c) {
   const box = document.getElementById('paylink-box');
   if (!box) return;
-  const link = `${window.location.origin}/pay.html?token=${c.payToken}`;
+  const link = `${window.location.origin}/p/${encodeURIComponent(c.code)}`;
   // Minimum defaults to the suggested next payment.
   const minVal = c.payMinAmount != null ? c.payMinAmount : c.suggestedNextPayment || '';
   const active = c.payLinkActive !== false;
@@ -118,6 +118,12 @@ function renderPayLink(c) {
   box.innerHTML = `
     <div class="pl-head">${icon('card', 16)} ${t('paylink.title')} ${statusHtml}</div>
     <div class="muted-text" style="font-size:12.5px;margin-bottom:12px">${t('paylink.hint')}</div>
+    ${c.code ? `
+    <div class="paylink-row" style="margin-bottom:14px">
+      <span class="muted-text" style="font-size:12.5px;white-space:nowrap">${t('code.label')}</span>
+      <input id="code-input" class="mono strong" readonly value="${escapeHtml(c.code)}" onclick="this.select()" />
+      <button class="btn secondary sm" id="code-copy">${t('paylink.copy')}</button>
+    </div>` : ''}
     <label class="field"><span>${t('paylink.min')}</span>
       <input type="number" id="pl-min" min="0" step="0.01" value="${minVal}" />
     </label>
@@ -140,6 +146,14 @@ function renderPayLink(c) {
     navigator.clipboard?.writeText(link).catch(() => document.execCommand('copy'));
     toast(t('paylink.copied'), 'success');
   };
+  const codeCopy = document.getElementById('code-copy');
+  if (codeCopy) {
+    codeCopy.onclick = () => {
+      document.getElementById('code-input').select();
+      navigator.clipboard?.writeText(c.code).catch(() => document.execCommand('copy'));
+      toast(t('code.copied'), 'success');
+    };
+  }
   document.getElementById('paylink-save').onclick = saveLinkSettings;
   document.getElementById('paylink-toggle').onclick = () => toggleLink(active);
 }

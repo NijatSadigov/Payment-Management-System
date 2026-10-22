@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { generateCustomerCode } from '../src/lib/customerCode';
 
 const prisma = new PrismaClient();
 
@@ -120,6 +121,8 @@ async function main() {
       data: {
         firstName: firstNames[i],
         lastName: lastNames[i],
+        code: await generateCustomerCode(lastNames[i], managerId),
+        createdById: managerId,
         phone: `+99450${String(1000000 + Math.floor(rand() * 8999999))}`,
         campaignId: campaign.id,
         paymentPlan: plan,

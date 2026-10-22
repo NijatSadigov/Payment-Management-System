@@ -150,7 +150,10 @@ function renderRows() {
           <td>
             <div class="cell-user">
               ${avatar(c.firstName, c.lastName, 'sm')}
-              <span class="strong">${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</span>
+              <span>
+                <span class="strong">${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</span>
+                ${c.code ? `<div class="muted-text mono" style="font-size:11.5px">${escapeHtml(c.code)}</div>` : ''}
+              </span>
             </div>
           </td>
           <td class="muted-text">${escapeHtml(c.phone)}</td>

@@ -37,6 +37,9 @@ model User {
   email        String   @unique
   passwordHash String   @map("password_hash")
   role         Role     @default(manager)
+  // Short tag embedded in the codes of customers this user creates, so a code
+  // tells you who issued it (e.g. "NS" in "Sadigov-NS4K7QX").
+  codeTag      String?  @unique @map("code_tag")
   createdAt    DateTime @default(now()) @map("created_at")
 
   managedCampaigns  CampaignManager[]
@@ -71,6 +74,9 @@ model CampaignManager {
 
 model Customer {
   id              Int            @id @default(autoincrement())
+  // Public customer code, e.g. "Sadigov-NS4K7QX" (surname, creator's tag, random) —
+  // used in the payment link (/p/<code>) and on the "check my payments" page.
+  code            String?        @unique
   firstName       String         @map("first_name")
   lastName        String         @map("last_name")
   phone           String
@@ -82,6 +88,8 @@ model Customer {
   lastPaymentDate DateTime?      @map("last_payment_date")
   status          CustomerStatus @default(has_debt)
   createdAt       DateTime       @default(now()) @map("created_at")
+  // User who created the customer; online payments via the code link credit them.
+  createdById     Int?           @map("created_by_id")
 
   // Payment-link settings a manager can configure for the customer's public link.
   payNote      String?  @map("pay_note")
