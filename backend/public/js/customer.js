@@ -276,6 +276,9 @@ function openPaymentModal() {
   document.getElementById('p-amount').max = c.remainingDebt;
   document.getElementById('p-note').value = '';
   document.getElementById('pay-error').textContent = '';
+  // Online payment is only offered when the server allows it.
+  document.querySelector('.method-opt[data-method="epay"]').style.display =
+    c.onlinePayments === false ? 'none' : '';
   // Reset to cash.
   const cash = document.querySelector('input[name="pmethod"][value="cash"]');
   if (cash) cash.checked = true;

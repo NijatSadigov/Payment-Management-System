@@ -208,6 +208,7 @@ Open **http://localhost:3000** — sign in with a demo account or the one-click 
 | Manager     | manager2@system.com | manager2 |
 
 The seed also creates 3 campaigns and 15 customers with varied plans, statuses, and payment history.
+The login page's one-click demo buttons only appear on `localhost`.
 
 ---
 
@@ -218,7 +219,10 @@ The seed also creates 3 campaigns and 15 customers with varied plans, statuses, 
 | `npm run dev`             | Start the server with hot reload     |
 | `npm run build`           | Compile TypeScript to `dist/`        |
 | `npm start`               | Run the compiled server (production) |
-| `npm run seed`            | Seed the database with demo data     |
+| `npm run seed`            | Wipe the database and load demo data (refused when `NODE_ENV=production`) |
+| `npm run create-admin`    | Create a super admin, or reset its password (`--email`, `--password`) |
+| `npm run migrate`         | Apply migrations (same as `prisma:deploy`) |
+| `npm run package`         | Build and zip the app for upload (`hadaf-payments-deploy.zip`) |
 | `npm run prisma:generate` | Generate the Prisma client           |
 | `npm run prisma:migrate`  | Create a dev migration               |
 | `npm run prisma:deploy`   | Apply migrations (production)        |
@@ -237,7 +241,7 @@ requires an `Authorization: Bearer <token>` header.
 - **Payments:** `GET/POST /customers/:id/payments`, `POST /customers/:id/payments/epay`
 - **Statistics:** `GET /stats/overview`, `/stats/by-campaign`, `/stats/by-manager`, `/stats/timeline?period=daily|weekly|monthly|yearly`
 - **Exports:** `GET /export/excel`, `GET /export/pdf` (filters: `campaign`, `manager`, `status`, `dateFrom`, `dateTo`)
-- **Public (no auth):** `GET /pay/:token`, `POST /pay/:token/epay` (customer portal); `POST /epay/epoint-callback` (Epoint result URL)
+- **Public (no auth):** `GET /pay/:code`, `POST /pay/:code/epay` (customer portal); `POST /epay/epoint-callback` (Epoint result URL)
 
 ---
 
@@ -269,7 +273,9 @@ The Epoint adapter lives in `backend/src/lib/epoint.ts`.
 
 ## Deployment
 
-The app is a single Node process serving both the UI and API, so hosting it (e.g. at a subdomain)
+**cPanel:** follow the step-by-step guide in [docs/DEPLOY.md](docs/DEPLOY.md).
+
+Elsewhere: the app is a single Node process serving both the UI and API, so hosting it (e.g. at a subdomain)
 means running the server and reverse-proxying to it over HTTPS.
 
 ```bash
@@ -288,8 +294,11 @@ npm start                    # run under pm2 / systemd / Docker on $PORT
 ### Production hardening
 - Use a **strong random `JWT_SECRET`** and a **dedicated DB user/password** (not the dev defaults).
 - Serve over **HTTPS** (auth token is stored client-side; Epoint requires HTTPS callbacks).
-- For a clean production DB, skip the demo seed and create a real admin (edit `prisma/seed.ts`, or
-  ask for a small create-admin script). Note: there is no in-app super-admin password change yet.
+- With `NODE_ENV=production` the server refuses to start with a missing/weak `JWT_SECRET` or a
+  localhost `APP_BASE_URL`, and keeps online payments **off** unless `EPOINT_MODE=live` (the sandbox
+  would let anyone mark a debt paid).
+- For a clean production DB, skip the demo seed and run `npm run create-admin`. Note: there is no
+  in-app super-admin password change yet (re-run `create-admin` to reset it).
 
 ---
 

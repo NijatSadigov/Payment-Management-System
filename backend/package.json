@@ -5,12 +5,16 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "seed": "ts-node prisma/seed.ts"
+    "migrate": "prisma migrate deploy",
+    "create-admin": "node dist/scripts/createAdmin.js",
+    "seed": "ts-node prisma/seed.ts",
+    "package": "npm run build && tar -a -c -f ../hadaf-payments-deploy.zip package.json package-lock.json dist public prisma/schema.prisma prisma/migrations"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -24,7 +28,8 @@
     "express": "^4.21.1",
     "express-async-errors": "^3.1.1",
     "jsonwebtoken": "^9.0.2",
-    "pdfkit": "^0.15.1"
+    "pdfkit": "^0.15.1",
+    "prisma": "^5.22.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -33,7 +38,6 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.9.0",
     "@types/pdfkit": "^0.13.5",
-    "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.3"

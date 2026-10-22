@@ -2,11 +2,17 @@ import path from 'path';
 import express from 'express';
 import 'express-async-errors';
 import cors from 'cors';
-import { config } from './config';
+import { config, checkProductionConfig } from './config';
 import apiRoutes from './routes';
 import { backfillCustomerCodes } from './lib/customerCode';
 
+checkProductionConfig();
+
 const app = express();
+
+// On the host (cPanel/Passenger) requests arrive through a reverse proxy; trust
+// it so req.ip is the visitor's address (used by the wrong-code rate limit).
+if (config.isProduction) app.set('trust proxy', 1);
 
 app.use(cors());
 app.use(express.json());

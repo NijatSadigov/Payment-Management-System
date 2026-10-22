@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { config } from '../config';
 import { customerScopeFilter, managerCampaignIds } from '../lib/scope';
 import { buildCustomerWhere } from '../lib/customerFilter';
 import { installmentCount, suggestedNextPayment, round2 } from '../lib/payment';
@@ -54,6 +55,7 @@ function serialize(customer: CustomerRow) {
     payNote: customer.payNote ?? null,
     payMinAmount: customer.payMinAmount ?? null,
     payLinkActive: customer.payLinkActive ?? true,
+    onlinePayments: config.onlinePayments,
     // Next payment due (for the main-screen deadline tracking).
     nextDueDate: nd?.dueDate ?? null,
     nextDueAmount: nd?.amount ?? null,

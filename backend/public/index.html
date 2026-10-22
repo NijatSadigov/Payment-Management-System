@@ -28,7 +28,7 @@
         <button class="btn" type="submit" style="width:100%" id="login-btn" data-i18n="login.signin">Sign In</button>
       </form>
 
-      <div class="login-hint">
+      <div class="login-hint" id="demo-login" hidden>
         <b data-i18n="login.quick">Quick demo login</b>
         <div class="btn-group" style="margin-top:10px">
           <button class="btn secondary sm" data-demo="super" data-i18n="login.super">Super Admin</button>
@@ -53,6 +53,10 @@
   <script>
     document.getElementById('logo-slot').innerHTML = logoMark(46);
     document.getElementById('login-lang').innerHTML = langSwitcher('light');
+
+    // Demo accounts exist only in a locally seeded database.
+    const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+    if (IS_LOCAL) document.getElementById('demo-login').hidden = false;
 
     const DEMO = {
       super: { email: 'admin@system.com', password: 'admin123' },

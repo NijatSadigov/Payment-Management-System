@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { config } from '../config';
 import { findCustomerByCode } from '../lib/customerCode';
 import { campaignPrimaryManagerId } from '../lib/scope';
 import { suggestedNextPayment, round2 } from '../lib/payment';
@@ -100,6 +101,7 @@ export async function getPublicCustomer(req: Request, res: Response) {
 
   res.json({
     active: true,
+    onlinePayments: config.onlinePayments,
     code: customer.code,
     firstName: customer.firstName,
     lastName: customer.lastName,
@@ -122,6 +124,9 @@ export async function getPublicCustomer(req: Request, res: Response) {
 
 // Public: a customer starts an online (EPAY) payment on their own balance.
 export async function initPublicEpay(req: Request, res: Response) {
+  if (!config.onlinePayments) {
+    return res.status(503).json({ error: 'Online payments are not available' });
+  }
   const parsed = await resolveLink(req, res);
   if (!parsed) return;
 

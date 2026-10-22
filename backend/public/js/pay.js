@@ -92,6 +92,8 @@ function render() {
     ? `<div class="suggested" style="margin:0 0 14px">${icon('spark', 18)}<span>${escapeHtml(c.note)}</span></div>`
     : '';
 
+  const canPayOnline = c.status !== 'paid' && c.remainingDebt > 0 && c.onlinePayments !== false;
+
   let payBlock;
   if (c.status === 'paid' || c.remainingDebt <= 0) {
     payBlock = noteHtml + `<div class="suggested" style="margin:0 0 4px">${icon('check', 18)}<span>${t('portal.thanks')}</span></div>`;
@@ -105,10 +107,11 @@ function render() {
     const minHtml = effMin > 0
       ? `<div class="muted-text" style="font-size:12px;margin-top:4px">${t('portal.minNote', { amount: formatMoney(effMin) })}</div>`
       : '';
-    payBlock =
-      noteHtml +
-      nextDueHtml +
-      `
+    payBlock = noteHtml + nextDueHtml;
+    if (!canPayOnline) {
+      payBlock += `<div class="suggested" style="margin:0 0 4px">${icon('lock', 18)}<span>${t('portal.onlineUnavailable')}</span></div>`;
+    } else {
+      payBlock += `
       <label class="field"><span>${t('field.amount')}</span>
         <input type="number" id="p-amount" min="${effMin || 0.01}" step="0.01" value="${prefill || ''}" max="${c.remainingDebt}" />
       </label>
@@ -117,6 +120,7 @@ function render() {
       <button class="btn ghost sm" id="fill-remaining" type="button">${t('portal.fillRemaining', { amount: formatMoney(c.remainingDebt) })}</button>
       <button class="btn" style="width:100%;margin-top:12px" id="pay-now">${icon('lock', 16)} ${t('portal.payNow')}</button>
       <div class="suggested" style="margin:14px 0 0;font-size:12.5px">${icon('lock', 16)}<span>${t('portal.securedBy')}</span></div>`;
+    }
   }
 
   const history = c.payments.length
@@ -138,7 +142,7 @@ function render() {
 
   host.innerHTML = summary + payBlock + history + other;
 
-  if (c.status !== 'paid' && c.remainingDebt > 0) {
+  if (canPayOnline) {
     document.getElementById('p-amount').addEventListener('input', validate);
     document.getElementById('fill-remaining').onclick = () => {
       document.getElementById('p-amount').value = c.remainingDebt;

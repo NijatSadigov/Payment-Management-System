@@ -19,6 +19,10 @@ function pick<T>(arr: T[]): T {
 }
 
 async function main() {
+  // This wipes every table and creates demo accounts with known passwords.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Refusing to seed a production database. Use "npm run create-admin" instead.');
+  }
   console.log('Clearing existing data...');
   await prisma.payment.deleteMany();
   await prisma.customer.deleteMany();

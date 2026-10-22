@@ -194,6 +194,9 @@ export async function createPayment(req: Request, res: Response) {
 // Creates a PENDING payment and returns where to send the payer. Customer
 // totals are NOT touched until the gateway confirms via the callback.
 export async function initEpayPayment(req: Request, res: Response) {
+  if (!config.onlinePayments) {
+    return res.status(503).json({ error: 'Online payments are not available' });
+  }
   const customerId = Number(req.params.id);
   const { amount, note, returnPath, language } = req.body || {};
 
@@ -265,6 +268,10 @@ async function processOutcome(orderRef: string, success: boolean): Promise<'ok' 
 // This is the server-to-server endpoint the real gateway calls. It trusts the
 // request only if the signature matches.
 export async function epayCallback(req: Request, res: Response) {
+  // Sandbox-only: its signing key may be the public development default.
+  if (!config.epoint.sandbox || !config.onlinePayments) {
+    return res.status(403).json({ error: 'Sandbox disabled' });
+  }
   const { order, status, signature } = req.body || {};
   if (!order || !status) {
     return res.status(400).json({ error: 'Missing order or status' });
@@ -303,7 +310,7 @@ export async function epointCallback(req: Request, res: Response) {
 // Stands in for the real gateway: it signs a callback exactly as the gateway
 // would and runs it through the same verified path.
 export async function epaySandboxComplete(req: Request, res: Response) {
-  if (!config.epoint.sandbox) {
+  if (!config.epoint.sandbox || !config.onlinePayments) {
     return res.status(403).json({ error: 'Sandbox disabled' });
   }
   const { ref, outcome } = req.body || {};
