@@ -57,6 +57,7 @@ Under **Environment variables** add:
 | `JWT_SECRET`   | a random string, at least 32 characters (see below)            |
 | `APP_BASE_URL` | `https://pay.hedefliseyi.edu.az`                                   |
 | `EPOINT_MODE`  | `sandbox` (online payments stay off until you have Epoint keys) |
+| `NODE_OPTIONS` | `--disable-wasm-trap-handler` (see "When something goes wrong") |
 
 Make a `JWT_SECRET` on your computer with:
 
@@ -93,6 +94,7 @@ If your cPanel has **Terminal**, steps 2–3 can be done there instead. Copy the
 run it, then:
 
 ```bash
+export NODE_OPTIONS=--disable-wasm-trap-handler
 npm run migrate
 npm run create-admin -- --email you@example.com --password 'YourLongPassword'
 ```
@@ -125,6 +127,14 @@ The live Epoint path has not been tested yet. Until it is turned on, customers c
 still see their balance and history, and managers record cash payments as usual.
 
 ## When something goes wrong
+
+- `WebAssembly.Instance(): Out of memory` from Prisma: the host caps virtual
+  memory, and Node reserves ~10 GB of it for WebAssembly by default. Node's
+  `--disable-wasm-trap-handler` turns that off. The `migrate` and `postinstall`
+  scripts pass it already; for anything else run
+  `export NODE_OPTIONS=--disable-wasm-trap-handler` first. If the app itself
+  complains that Prisma Client is not generated, run `npx prisma generate` with
+  that set.
 
 - The app writes its errors to `stderr.log` in the application root (File Manager).
 - `Invalid production configuration: ...` means an environment variable from step 4

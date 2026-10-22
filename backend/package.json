@@ -8,10 +8,11 @@
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "npm run clean && tsc",
     "start": "node dist/index.js",
+    "postinstall": "node --disable-wasm-trap-handler node_modules/prisma/build/index.js generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "migrate": "prisma migrate deploy",
+    "migrate": "node --disable-wasm-trap-handler node_modules/prisma/build/index.js migrate deploy",
     "create-admin": "node dist/scripts/createAdmin.js",
     "seed": "ts-node prisma/seed.ts",
     "package": "npm run build && node scripts/package.js"
