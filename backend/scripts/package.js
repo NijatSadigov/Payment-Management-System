@@ -17,6 +17,7 @@ const entries = [
   'public',
   'prisma/schema.prisma',
   'prisma/migrations',
+  'scripts/prisma.js',
 ];
 
 fs.rmSync(out, { force: true });

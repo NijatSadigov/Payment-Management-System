@@ -58,6 +58,8 @@ Under **Environment variables** add:
 | `APP_BASE_URL` | `https://pay.hedefliseyi.edu.az`                                   |
 | `EPOINT_MODE`  | `sandbox` (online payments stay off until you have Epoint keys) |
 | `NODE_OPTIONS` | `--disable-wasm-trap-handler` (see "When something goes wrong") |
+| `TOKIO_WORKER_THREADS` | `2` (the host caps threads; more makes database calls hang) |
+| `MALLOC_ARENA_MAX` | `2` |
 
 Make a `JWT_SECRET` on your computer with:
 
@@ -127,6 +129,14 @@ The live Epoint path has not been tested yet. Until it is turned on, customers c
 still see their balance and history, and managers record cash payments as usual.
 
 ## When something goes wrong
+
+- A Prisma command (e.g. `migrate`) sits forever with no output: the host's
+  thread cap. `npm run migrate` sets `TOKIO_WORKER_THREADS=2` itself; for other
+  commands set it (and `MALLOC_ARENA_MAX=2`) in the environment first.
+- `P1001: Can't reach database server at localhost:5432`: PostgreSQL only listens
+  on a local socket here. End `DATABASE_URL` with `&host=/var/run/postgresql`.
+- `P1010 ... denied access`: in PostgreSQL Databases, add the user to the database
+  and click **Synchronize Grants**. The username needs the `targetium_` prefix.
 
 - `WebAssembly.Instance(): Out of memory` from Prisma: the host caps virtual
   memory, and Node reserves ~10 GB of it for WebAssembly by default. Node's
