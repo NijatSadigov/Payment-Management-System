@@ -1,7 +1,7 @@
 // Public customer self-service payment portal (no login).
-// Reached via /p/<customer code> (e.g. /p/Sadigov-NS4K7QX), or bare /p which
+// Reached via /<customer code> (e.g. /Sadigov-NS4K7QX), or the site root which
 // asks for a code.
-const codeMatch = window.location.pathname.match(/^\/p\/([^/]+)\/?$/);
+const codeMatch = window.location.pathname.match(/^\/([A-Za-z0-9-]+)\/?$/);
 const customerCode = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
 let portalData = null;
 
@@ -46,7 +46,7 @@ function renderLookup(error, value) {
     // Codes are letters, digits and a dash; ignore spaces etc. people may type.
     const code = input.value.replace(/[^A-Za-z0-9-]/g, '');
     if (!code) return;
-    window.location.href = '/p/' + encodeURIComponent(code);
+    window.location.href = '/' + encodeURIComponent(code);
   };
 }
 
@@ -138,7 +138,7 @@ function render() {
        </div>`
     : '';
 
-  const other = `<div style="text-align:center;margin-top:16px"><a class="btn ghost sm" href="/p">${t('lookup.other')}</a></div>`;
+  const other = `<div style="text-align:center;margin-top:16px"><a class="btn ghost sm" href="/">${t('lookup.other')}</a></div>`;
 
   host.innerHTML = summary + payBlock + history + other;
 

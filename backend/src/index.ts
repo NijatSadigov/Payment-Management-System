@@ -26,19 +26,25 @@ app.use(express.json());
 // API routes.
 app.use('/api', apiRoutes);
 
-// Serve the frontend from /public.
+// Serve the frontend from /public. The staff login page is only served at its
+// private path, never as a static file.
 const publicDir = path.join(__dirname, '..', 'public');
-app.use(express.static(publicDir));
+app.use('/login.html', (_req, res) => res.status(404).end());
+app.use(express.static(publicDir, { index: false }));
 
-// Customer portal: /p asks for a customer code, /p/<code> shows that
-// customer's payments (both handled by pay.html).
-app.get(['/p', '/p/:code'], (_req, res) => {
-  res.sendFile(path.join(publicDir, 'pay.html'));
+// Staff login.
+app.get(config.adminPath, (_req, res) => {
+  res.sendFile(path.join(publicDir, 'login.html'));
 });
 
-// Root serves the login page.
-app.get('/', (_req, res) => {
-  res.sendFile(path.join(publicDir, 'index.html'));
+// Earlier customer links lived under /p.
+app.get('/p', (_req, res) => res.redirect(301, '/'));
+app.get('/p/:code', (req, res) => res.redirect(301, '/' + encodeURIComponent(req.params.code)));
+
+// Customer portal: / asks for a customer code, /<code> (e.g. /Sadigov-NS4K7QX)
+// shows that customer's payments. Both are pay.html.
+app.get(['/', '/:code([A-Za-z0-9][A-Za-z0-9-]{2,60})'], (_req, res) => {
+  res.sendFile(path.join(publicDir, 'pay.html'));
 });
 
 // Central error handler so thrown errors return JSON, not HTML.

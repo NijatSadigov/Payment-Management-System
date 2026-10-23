@@ -13,7 +13,7 @@ function currentUser() {
 function requireAuth(requiredRole) {
   const user = currentUser();
   if (!user) {
-    window.location.href = '/index.html';
+    goToLogin();
     return null;
   }
   if (requiredRole && user.role !== requiredRole) {
@@ -38,6 +38,6 @@ async function doLogout() {
   } catch {
     // Ignore network errors on logout.
   }
-  localStorage.clear();
-  window.location.href = '/index.html';
+  clearSession();
+  goToLogin();
 }

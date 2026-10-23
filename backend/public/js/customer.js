@@ -107,7 +107,7 @@ function dateInputValue(v) {
 function renderPayLink(c) {
   const box = document.getElementById('paylink-box');
   if (!box) return;
-  const link = `${window.location.origin}/p/${encodeURIComponent(c.code)}`;
+  const link = `${window.location.origin}/${encodeURIComponent(c.code)}`;
   // Minimum defaults to the suggested next payment.
   const minVal = c.payMinAmount != null ? c.payMinAmount : c.suggestedNextPayment || '';
   const active = c.payLinkActive !== false;

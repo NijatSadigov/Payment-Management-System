@@ -40,7 +40,7 @@
       </div>
 
       <div style="text-align:center;margin-top:14px">
-        <a href="/p" class="btn ghost sm" data-i18n="login.checkPayments">Customer? Check your payments</a>
+        <a href="/" class="btn ghost sm" data-i18n="login.checkPayments">Customer? Check your payments</a>
       </div>
 
       <div class="login-lang" id="login-lang"></div>
@@ -66,6 +66,13 @@
     };
 
     // If already logged in, go to the right home page.
+    // Remember this private address for sign-outs (see goToLogin in api.js).
+    try {
+      localStorage.setItem('loginPath', window.location.pathname);
+    } catch {
+      /* storage unavailable */
+    }
+
     const existing = currentUser();
     if (existing) {
       window.location.href = existing.role === 'super_admin' ? '/dashboard.html' : '/manager-dashboard.html';

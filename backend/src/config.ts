@@ -18,6 +18,10 @@ export const config = {
   // redirect the payer back and reach the server-to-server callback.
   appBaseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',
 
+  // Private path of the staff login page, e.g. "staff-7k2q" → /staff-7k2q.
+  // The site root belongs to customers, so staff use this address instead.
+  adminPath: '/' + (process.env.ADMIN_PATH || 'admin').replace(/^\/+|\/+$/g, ''),
+
   // Epoint online-payment gateway (epoint.az).
   // "sandbox" uses a built-in simulated gateway (no real money, works out of the
   // box). Set EPOINT_MODE=live and fill in the merchant keys to go live.

@@ -57,6 +57,7 @@ Under **Environment variables** add:
 | `JWT_SECRET`   | a random string, at least 32 characters (see below)            |
 | `APP_BASE_URL` | `https://pay.hedefliseyi.edu.az`                                   |
 | `EPOINT_MODE`  | `sandbox` (online payments stay off until you have Epoint keys) |
+| `ADMIN_PATH`   | a private word for the staff login, e.g. `staff-7k2q` → `/staff-7k2q` (default `admin`) |
 | `NODE_OPTIONS` | `--disable-wasm-trap-handler` (see "When something goes wrong") |
 | `TOKIO_WORKER_THREADS` | `2` (the host caps threads; more makes database calls hang) |
 | `MALLOC_ARENA_MAX` | `2` |
@@ -88,7 +89,9 @@ Back in **Setup Node.js App** → edit the application:
 4. **Delete** `ADMIN_EMAIL` and `ADMIN_PASSWORD` again and **Save**.
 5. **Start App** (or **Restart**).
 
-Open `https://pay.hedefliseyi.edu.az` and sign in with that email and password. Then
+Open `https://pay.hedefliseyi.edu.az/admin` (or your `ADMIN_PATH`) and sign in with
+that email and password. The site root `https://pay.hedefliseyi.edu.az/` is the
+customers' "check my payments" page. Then
 add campaigns and managers from the admin screens.
 
 If your cPanel has **Terminal**, steps 2–3 can be done there instead. Copy the

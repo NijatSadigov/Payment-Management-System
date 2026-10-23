@@ -1,3 +1,21 @@
+// The staff login lives at a private path (ADMIN_PATH on the server). The login
+// page remembers it, so sign-outs and expired sessions return there rather
+// than to the customer page at the site root.
+function goToLogin() {
+  let loginPath = '/';
+  try {
+    loginPath = localStorage.getItem('loginPath') || '/';
+  } catch {
+    /* storage unavailable */
+  }
+  window.location.href = loginPath;
+}
+
+function clearSession() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+}
+
 // Central fetch wrapper — attaches the JWT and handles auth failures.
 async function apiRequest(method, path, body = null) {
   const token = localStorage.getItem('token');
@@ -11,8 +29,8 @@ async function apiRequest(method, path, body = null) {
   });
 
   if (res.status === 401) {
-    localStorage.clear();
-    window.location.href = '/index.html';
+    clearSession();
+    goToLogin();
     return Promise.reject(new Error('Unauthorized'));
   }
 
@@ -42,8 +60,8 @@ async function downloadFile(path, filename) {
       headers: token ? { Authorization: 'Bearer ' + token } : {},
     });
     if (res.status === 401) {
-      localStorage.clear();
-      window.location.href = '/index.html';
+      clearSession();
+      goToLogin();
       return;
     }
     if (!res.ok) throw new Error('Export failed');

@@ -84,9 +84,10 @@ is available in **Azerbaijani, English, and Russian**.
 ### 🔗 Customer self-service payment links
 - Each customer gets a readable **customer code** like `Sadigov-NS4K7QX`: their surname, a 2-character
   tag of the manager who created them (shown on the Managers page), and 5 random characters.
-- Their no-login link is `/p/<code>` (e.g. `/p/Sadigov-NS4K7QX`), which a manager copies and sends by
+- Their no-login link is `/<code>` (e.g. `/Sadigov-NS4K7QX`), which a manager copies and sends by
   SMS/WhatsApp/email; the customer views their balance and pays online from home.
-- Customers can also open **`/p`** (linked from the login page), type their code, and see their payments.
+- The site root **`/`** is for customers: they type their code and see their payments. Staff sign in at
+  a private path set by `ADMIN_PATH` (default `/admin`). Old `/p/<code>` links redirect.
   Wrong-code lookups are rate-limited per IP to stop guessing.
 - Configurable per link: a **message** to the customer, a **minimum payment** (defaults to the
   suggested installment, auto-capped at remaining debt), and **cancel/reactivate**.

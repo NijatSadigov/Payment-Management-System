@@ -54,7 +54,7 @@ interface LinkTarget {
   creatorId: number | null;
 }
 
-// Resolves the customer code in a public link (/p/Sadigov-NS4K7QX).
+// Resolves the customer code in a public link (/Sadigov-NS4K7QX).
 async function resolveLink(req: Request, res: Response): Promise<LinkTarget | null> {
   const ip = req.ip || 'unknown';
   if (tooManyFailures(ip)) {
@@ -156,7 +156,7 @@ export async function initPublicEpay(req: Request, res: Response) {
 
   const managerId = await resolveCreditManager(parsed.creatorId, customer.campaignId);
   const result = await beginEpayPayment(customer.id, value, null, managerId, {
-    returnPath: `/p/${encodeURIComponent(customer.code!)}`,
+    returnPath: `/${encodeURIComponent(customer.code!)}`,
     language: req.body?.language,
     description: `Payment — ${customer.firstName} ${customer.lastName}`,
   });
