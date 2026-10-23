@@ -14,6 +14,12 @@ const app = express();
 // it so req.ip is the visitor's address (used by the wrong-code rate limit).
 if (config.isProduction) app.set('trust proxy', 1);
 
+// Private tool: keep every page and API response out of search engines.
+app.use((_req, res, next) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 

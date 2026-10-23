@@ -106,13 +106,46 @@ npm run create-admin -- --email you@example.com --password 'YourLongPassword'
 **Never run `npm run seed` on the server.** It deletes all data and creates demo
 accounts; it refuses to run in production mode anyway.
 
-## Updating to a new version
+## Updating to a new version (git — recommended)
+
+After a one-time switch, an update is: `git push` on your computer, then one
+command on the server.
+
+### One-time switch
+
+1. In cPanel **Terminal**, clone the repository into your home folder:
+   ```bash
+   cd ~ && git clone https://github.com/NijatSadigov/Payment-Management-System.git
+   ```
+2. **Setup Node.js App** → pencil icon → change **Application root** to
+   `Payment-Management-System/backend` → **SAVE**. The environment variables and
+   the database stay as they are.
+   If the field can't be edited: copy down all environment variables, **Destroy**
+   the app, and create it again with that root, the same settings as in step 4,
+   and the same variables.
+3. Run the update script once (it installs, builds, migrates and restarts):
+   ```bash
+   bash ~/Payment-Management-System/backend/deploy.sh
+   ```
+4. Check the site works, then delete the old `hadaf-payments` folder in File
+   Manager.
+
+### Every update after that
+
+1. On your computer: commit and `git push`.
+2. On the server, in **Terminal**:
+   ```bash
+   bash ~/Payment-Management-System/backend/deploy.sh
+   ```
+   It ends with `Deployed <commit>`. If a step fails, it stops there and the
+   running site keeps the previous version until the restart step.
+
+## Updating with a zip (if git isn't set up)
 
 1. `npm run package` on your computer.
-2. **Stop App**, upload the new zip into `hadaf-payments/`, **Extract** and
+2. **Stop App**, upload the new zip into the application root, **Extract** and
    overwrite, delete the zip.
-3. **Run NPM Install** (only needed if dependencies changed), then **Run JS
-   script** → `migrate`.
+3. In Terminal: `npm run migrate` (with the app's environment entered).
 4. **Start App**.
 
 ## Turning on real online payments (Epoint)
