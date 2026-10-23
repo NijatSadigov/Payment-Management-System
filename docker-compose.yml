@@ -1,0 +1,50 @@
+# Payment Management System — app + its own PostgreSQL.
+# The app also joins the portfolio's Caddy network (external) so the reverse
+# proxy can reach it by the alias `paymentmanager`; the database stays private
+# to this project's own network.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: payment
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      POSTGRES_DB: payment_management
+    volumes:
+      - pmsdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment -d payment_management"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://payment:${DB_PASSWORD:?set DB_PASSWORD}@db:5432/payment_management?schema=public
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      JWT_EXPIRES_IN: "7d"
+      PORT: "3000"
+      APP_BASE_URL: https://paymentmanager.nijatsadigov.com
+      EPOINT_MODE: sandbox
+    expose:
+      - "3000"
+    networks:
+      default: {}
+      web:
+        aliases:
+          - paymentmanager
+
+networks:
+  web:
+    external: true
+    name: portfolio_default
+
+volumes:
+  pmsdata:
